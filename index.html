@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHADOW SHOP - VIP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #00f2ff; --bg: #0b0f19; --card: #16213e; --text: #ffffff; --accent: #7b2cbf; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); margin: 0; }
+        .header { background: var(--card); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); }
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card); transition: 0.4s; z-index: 1000; padding: 20px; border-right: 1px solid var(--primary); }
+        .sidebar.active { left: 0; }
+        .menu-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #2d334a; display: block; color: white; text-decoration: none; }
+        .auth-container { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--primary); width: 320px; text-align: center; }
+        .input-cyan { width: 100%; padding: 12px; margin: 10px 0; background: #0b0f19; border: 1px solid var(--primary); color: white; border-radius: 8px; }
+        .btn-cyan { width: 100%; padding: 12px; background: var(--primary); border: none; font-weight: bold; cursor: pointer; border-radius: 8px; color: #0b0f19; }
+        .container { padding: 15px; }
+        
+        /* Phần thông tin tài khoản mới */
+        .user-panel { background: var(--card); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--primary); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+        .user-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .user-avatar { width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #0b0f19; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .stat-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #2d334a; }
+        .progress-container { background: #2d334a; border-radius: 10px; height: 10px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { background: var(--primary); height: 100%; width: 0%; transition: 0.5s; }
+
+        .card { background: var(--card); border-radius: 15px; margin-bottom: 20px; border: 1px solid #2d334a; overflow: hidden; }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .p-info { padding: 15px; }
+        select option { background: var(--card); color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-ui" class="auth-container">
+        <div class="auth-box">
+            <h2 id="auth-title" style="color:var(--primary)">ĐĂNG NHẬP</h2>
+            <div id="reg-fields" style="display:none">
+                <input type="email" id="email" class="input-cyan" placeholder="Nhập Email">
+            </div>
+            <input type="text" id="user" class="input-cyan" placeholder="Tên tài khoản">
+            <input type="password" id="pass" class="input-cyan" placeholder="Mật khẩu">
+            <button class="btn-cyan" onclick="handleAuth()">XÁC NHẬN</button>
+            <p id="toggle-text" onclick="toggleAuth()" style="font-size:12px; cursor:pointer; margin-top:10px;">Chưa có tài khoản? Đăng ký</p>
+        </div>
+    </div>
+
+    <div id="main-app" style="display:none">
+        <div class="header">
+            <i class="fas fa-bars" onclick="toggleSidebar()" style="font-size:24px; color:var(--primary)"></i>
+            <div style="font-weight:bold">SHADOW SHOP</div>
+            <div id="top-balance" style="color: var(--primary); font-weight: bold;">0đ</div>
+        </div>
+
+        <div id="sidebar" class="sidebar">
+            <h3 style="color:var(--primary)">MENU</h3>
+            <a href="#" class="menu-item" onclick="showPage('home')">Trang Chủ</a>
+            <a href="#" class="menu-item" onclick="showPage('napthe')">Nạp Thẻ</a>
+            <div id="admin-menu" style="display:none">
+                <a href="#" class="menu-item" onclick="showPage('admin-panel')" style="color:var(--primary)">QUẢN TRỊ VIÊN</a>
+            </div>
+            <a href="#" class="menu-item" onclick="logout()" style="color:red">Đăng xuất</a>
+        </div>
+
+        <div class="container" id="page-home">
+            <div class="user-panel">
+                <div class="user-header">
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                    <div>
+                        <div id="display-name" style="font-weight: bold; font-size: 18px;">Hoàng Vinh</div>
+                        <div style="font-size: 12px; color: #94a3b8;">Thành viên kim cương</div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div style="font-size: 11px; color: #94a3b8;">SỐ DƯ</div>
+                        <div id="panel-balance" style="color: var(--primary); font-weight: bold;">0đ</div>
+                    </div>
+                    <div class="stat-box">
+                        <div style="font-size: 11px; color: #94a3b8;">TỔNG NẠP</div>
+                        <div id="total-recharge" style="color: #ff00ff; font-weight: bold;">0đ</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; font-size: 12px; display: flex; justify-content: space-between;">
+                    <span>Tiến trình nạp</span>
+                    <span id="recharge-percent">0%</span>
+                </div>
+                <div class="progress-container">
+                    <div id="bar-width" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="card"><img src="1000182098.jpg"><div class="p-info"><h3>Drip Silent</h3><button class="btn-cyan">MUA NGAY</button></div></div>
+            <div class="card"><img src="1000182097.jpg"><div class="p-info"><h3>Zygame</h3><button class="btn-cyan">MUA NGAY</button></div></div>
+            <div class="card"><img src="1000182099.jpg"><div class="p-info"><h3>Acc Clone LV5</h3><button class="btn-cyan">MUA - 2.500đ</button></div></div>
+        </div>
+
+        <div class="container" id="page-napthe" style="display:none">
+            <div class="auth-box" style="width:100%">
+                <h3 style="color:var(--primary)">NẠP THẺ CÀO</h3>
+                <select id="card-type" class="input-cyan" onchange="updateRate()">
+                    <option value="Viettel">Viettel (Chiết khấu 13%)</option>
+                    <option value="Vinaphone">Vinaphone (Chiết khấu 11%)</option>
+                    <option value="Mobifone">Mobifone (Chiết khấu 18%)</option>
+                    <option value="Zing">Zing (Chiết khấu 12.5%)</option>
+                    <option value="Garena">Garena (Chiết khấu 12.5%)</option>
+                    <option value="Vcoin">Vcoin (Chiết khấu 13%)</option>
+                    <option value="Scoin">Scoin (Chiết khấu 33%)</option>
+                </select>
+                <select id="card-amount" class="input-cyan" onchange="updateRate()">
+                    <option value="10000">10.000đ</option>
+                    <option value="20000">20.000đ</option>
+                    <option value="50000">50.000đ</option>
+                    <option value="100000">100.000đ</option>
+                    <option value="200000">200.000đ</option>
+                    <option value="500000">500.000đ</option>
+                </select>
+                <p id="receive-amount" style="font-size:14px; color:var(--primary)">Thực nhận: 8.700đ</p>
+                <input type="text" id="seri" class="input-cyan" placeholder="Số Seri">
+                <input type="text" id="pin" class="input-cyan" placeholder="Mã Thẻ">
+                <button class="btn-cyan" onclick="requestNap()">GỬI THẺ</button>
+            </div>
+        </div>
+
+        <div class="container" id="page-admin" style="display:none">
+            <h3 style="color:var(--primary)">QUẢN LÝ THẺ & TIỀN</h3>
+            <div id="list-pending"></div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_ACC = { u: "shadow+999", p: "HV0308hv" };
+        const RATES = { "Viettel": 0.87, "Vinaphone": 0.89, "Mobifone": 0.82, "Zing": 0.875, "Garena": 0.875, "Vcoin": 0.87, "Scoin": 0.67 };
+
+        let data = JSON.parse(localStorage.getItem('shadow_shop')) || { 
+            balance: 0, 
+            totalSpent: 0, // Tổng nạp
+            user: null, 
+            pending: [], 
+            accounts: {} 
+        };
+        data.accounts[ADMIN_ACC.u] = ADMIN_ACC.p;
+
+        function updateRate() {
+            const type = document.getElementById('card-type').value;
+            const amount = document.getElementById('card-amount').value;
+            const receive = Math.floor(amount * RATES[type]);
+            document.getElementById('receive-amount').innerText = `Thực nhận: ${receive.toLocaleString()}đ`;
+        }
+
+        function requestNap() {
+            const type = document.getElementById('card-type').value;
+            const amount = document.getElementById('card-amount').value;
+            const s = document.getElementById('seri').value;
+            const p = document.getElementById('pin').value;
+            if(!s || !p) return alert("Vui lòng nhập đủ thông tin thẻ!");
+            data.pending.push({ type, amount, s, p, u: data.user, receive: Math.floor(amount * RATES[type]) });
+            save(); alert("Đã gửi thẻ thành công!");
+        }
+
+        function renderPending() {
+            let html = '';
+            data.pending.forEach((item, index) => {
+                html += `<div class="card" style="padding:10px; font-size:13px;">
+                    <b>Khách: ${item.u}</b> | ${item.type} ${item.amount}đ<br>
+                    <button onclick="changeMoney(${index}, 'plus')" class="btn-cyan" style="width:45%; margin-top:10px;">+ Duyệt</button>
+                    <button onclick="changeMoney(${index}, 'minus')" class="btn-cyan" style="width:45%; margin-top:10px; background:red; color:white;">- Hủy</button>
+                </div>`;
+            });
+            document.getElementById('list-pending').innerHTML = html || '<p>Không có yêu cầu.</p>';
+        }
+
+        function changeMoney(index, type) {
+            const item = data.pending[index];
+            if (type === 'plus') {
+                data.balance += item.receive;
+                data.totalSpent += item.receive;
+            }
+            data.pending.splice(index, 1);
+            save(); login(); // Reset giao diện
+            alert("Đã xử lý!");
+        }
+
+        function handleAuth() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const isReg = document.getElementById('reg-fields').style.display === 'block';
+            if (isReg) {
+                if(data.accounts[u]) return alert("Tên đã tồn tại!");
+                data.accounts[u] = p; save(); toggleAuth(); alert("Đăng ký xong!");
+            } else {
+                if(data.accounts[u] === p) { data.user = u; data.isAdmin = (u === ADMIN_ACC.u); save(); login(); }
+                else alert("Sai tài khoản hoặc mật khẩu!");
+            }
+        }
+
+        function login() {
+            document.getElementById('auth-ui').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            
+            // Cập nhật số liệu lên bảng
+            document.getElementById('display-name').innerText = data.user;
+            document.getElementById('top-balance').innerText = data.balance.toLocaleString() + "đ";
+            document.getElementById('panel-balance').innerText = data.balance.toLocaleString() + "đ";
+            document.getElementById('total-recharge').innerText = data.totalSpent.toLocaleString() + "đ";
+            
+            // Tính toán % tiến trình (ví dụ mốc 1 triệu là 100%)
+            let percent = Math.min((data.totalSpent / 1000000) * 100, 100);
+            document.getElementById('recharge-percent').innerText = Math.floor(percent) + "%";
+            document.getElementById('bar-width').style.width = percent + "%";
+
+            if(data.isAdmin) document.getElementById('admin-menu').style.display = 'block';
+            showPage('home');
+        }
+
+        function showPage(p) {
+            document.getElementById('page-home').style.display = p==='home'?'block':'none';
+            document.getElementById('page-napthe').style.display = p==='napthe'?'block':'none';
+            document.getElementById('page-admin').style.display = p==='admin-panel'?'block':'none';
+            if(p==='admin-panel') renderPending();
+            document.getElementById('sidebar').classList.remove('active');
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function toggleAuth() { 
+            const isReg = document.getElementById('reg-fields').style.display === 'block';
+            document.getElementById('reg-fields').style.display = isReg ? 'none' : 'block';
+            document.getElementById('auth-title').innerText = isReg ? 'ĐĂNG NHẬP' : 'ĐĂNG KÝ';
+        }
+        function save() { localStorage.setItem('shadow_shop', JSON.stringify(data)); }
+        function logout() { data.user = null; save(); location.reload(); }
+        if (data.user) login();
+    </script>
+</body>
+                                </html>
+                                
